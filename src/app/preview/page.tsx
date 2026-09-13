@@ -1,114 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import FlowerVisual from '@/components/flower/FlowerVisual';
-import { getFlowerConfig } from '@/lib/flower/config';
 import type { CreateGiftInput } from '@/lib/validation/schemas';
 import type { FlowerType } from '@/types';
+import { FLOWER_CONFIGS } from '@/lib/flower/config';
+import { calculateFlowerDay, getGrowthStage } from '@/lib/flower/day';
+import FlowerVisual from '@/components/flower/FlowerVisual';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 
-function getInitialPreview(): CreateGiftInput | null {
-  if (typeof window === 'undefined') return null;
-  const stored = sessionStorage.getItem('giftPreview');
-  return stored ? JSON.parse(stored) : null;
-}
-
-const GROWTH_STAGES = [
-  { day: 1, emoji: '🌱', label: 'Day 1' },
-  { day: 7, emoji: '🌿', label: 'Day 7' },
-  { day: 14, emoji: '🌿', label: 'Day 14' },
-  { day: 21, emoji: '🌷', label: 'Day 21' },
-  { day: 30, emoji: '🌸', label: 'Day 30' },
-];
-
 export default function PreviewPage() {
   const router = useRouter();
-  const [previewData] = useState<CreateGiftInput | null>(getInitialPreview);
+  const [preview, setPreview] = useState<CreateGiftInput | null>(null);
+  const [days, setDays] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showBloomMessage, setShowBloomMessage] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
 
-  if (!previewData) {
-    if (typeof window !== 'undefined') router.replace('/create');
-    return null;
-  }
+  useEffect(() => {
+    const raw = sessionStorage.getItem('giftPreview');
+    if (!raw) { router.replace('/create'); return; }
+    const parsed = JSON.parse(raw) as CreateGiftInput;
+    setPreview(parsed);
 
-  const config = getFlowerConfig(previewData.flowerType as FlowerType);
+    const start = new Date(parsed.startDate);
+    const diff = Math.floor((Date.now() - start.getTime()) / 86400000);
+    setDays(Math.max(0, Math.min(30, diff)));
 
-  const handleCreate = async () => {
+    return () => sessionStorage.removeItem('giftPreview');
+  }, [router]);
+
+  const stage = useMemo(() => {
+    if (!preview) return 'seed';
+    return getGrowthStage(days);
+  }, [days, preview]);
+
+  const flowerName = preview?.flowerName || '';
+  const previewFlowerType = (preview?.flowerType as FlowerType) || 'rose';
+  const pct = Math.min(100, Math.max(0, (days / 30) * 100));
+  const previewStage = days === 30 ? 'bloom' : stage;
+
+  const handleConfirm = async () => {
+    if (!preview || isCreating) return;
     setIsCreating(true);
-    setError(null);
     try {
-      const res = await fetch('/api/gifts', {
+      const response = await fetch('/api/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(previewData),
+        body: JSON.stringify(preview),
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || 'Something went wrong.'); return; }
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || 'Failed to create gift');
+      const token = result.gift.token || result.gift.secureToken;
+      const url = `${window.location.origin}/g/${token}`;
+      setShareUrl(url);
       sessionStorage.removeItem('giftPreview');
-      sessionStorage.setItem('giftCreated', JSON.stringify({
-        url: data.url, token: data.token,
-        flowerName: previewData.flowerName, recipientName: previewData.recipientName,
-      }));
-      router.push('/preview?created=true');
-    } catch { setError('Network error. Please try again.'); }
-    finally { setIsCreating(false); }
+    } catch {
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
-  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const isCreated = params?.get('created') === 'true';
-
-  if (isCreated) {
-    const created = JSON.parse(sessionStorage.getItem('giftCreated') || '{}');
-    const fullUrl = `${window.location.origin}${created.url}`;
-
-    const handleCopy = async () => {
-      await navigator.clipboard.writeText(fullUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    };
-
-    const handleShare = async () => {
+  const share = async () => {
+    if (!shareUrl) return;
+    try {
       if (navigator.share) {
-        await navigator.share({ title: `A flower for ${created.recipientName}`, text: `I made a flower for you 🌸`, url: fullUrl });
+        await navigator.share({ text: `A flower is growing for you — open when you're ready 🌱` });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link copied!');
       }
-    };
+    } catch { /* ignore */ }
+  };
 
+  if (!preview || !shareUrl) {
     return (
-      <main className="min-h-screen bg-cream flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center space-y-8 animate-fade-in">
-          <div className="flex justify-center">
-            <FlowerVisual stage="bloom" health="healthy" flowerType={previewData.flowerType as FlowerType} size="lg" showParticles />
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="font-serif text-3xl text-charcoal">Your flower is ready.</h1>
-            <p className="text-taupe">Now all it needs is someone to care for it.</p>
-          </div>
-
-          <Card className="p-5 space-y-3">
-            <p className="text-xs text-taupe-light uppercase tracking-wide">Private gift link</p>
-            <p className="text-sm font-mono text-taupe break-all bg-cream-deep rounded-lg p-3">{fullUrl}</p>
-          </Card>
-
-          <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={handleCopy}>
-              {copied ? 'Copied ✓' : 'Copy Link'}
-            </Button>
-            {typeof navigator !== 'undefined' && 'share' in navigator && (
-              <Button className="flex-1" onClick={handleShare}>
-                Share the Flower
-              </Button>
-            )}
-          </div>
-
-          <p className="text-xs text-taupe-light">
-            This link is private. Anyone who has it can view and care for this flower.
-          </p>
+      <main className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-center text-taupe animate-fade-in">
+          <div className="w-6 h-6 border-2 border-blush border-t-rose rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm">Loading preview...</p>
         </div>
       </main>
     );
@@ -116,102 +87,88 @@ export default function PreviewPage() {
 
   return (
     <main className="min-h-screen bg-cream">
-      <div className="max-w-lg mx-auto px-6 py-8 sm:py-12">
-        <button onClick={() => router.back()} className="text-sm text-taupe hover:text-charcoal mb-8 min-h-[44px] inline-flex items-center transition-colors">
-          ← Back to edit
-        </button>
+      <div className="max-w-lg mx-auto px-6 pt-10 sm:pt-16 pb-20 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <p className="text-sm text-taupe-light uppercase tracking-widest">Preview</p>
+          <h1 className="font-serif text-3xl sm:text-4xl text-charcoal">Here&apos;s your flower</h1>
+        </div>
 
-        <div className="space-y-6">
-          {/* Hero preview */}
-          <div className="text-center space-y-4">
-            <FlowerVisual stage="sprout" health="healthy" flowerType={previewData.flowerType as FlowerType} size="md" />
-            <div>
-              <p className="text-xs text-taupe-light uppercase tracking-wide mb-1">A flower for</p>
-              <p className="font-serif text-2xl text-charcoal">{previewData.recipientName}</p>
+        {/* Hero Flower */}
+        <div className="flex flex-col items-center space-y-6 animate-fade-in">
+          <FlowerVisual stage={previewStage} health="healthy" flowerType={previewFlowerType} size="lg" />
+          <div className="text-center space-y-1">
+            <p className="font-serif text-2xl text-charcoal">{flowerName}</p>
+            <p className="text-sm text-taupe">For <span className="text-rose font-medium">{preview.recipientName}</span></p>
+          </div>
+        </div>
+
+        {/* Growth Timeline */}
+        <Card className="p-6 space-y-5">
+          <h3 className="font-serif text-lg text-charcoal text-center">Growth Timeline</h3>
+
+          {/* Progress bar */}
+          <div className="space-y-2">
+            <div className="h-3 bg-cream-deep rounded-full overflow-hidden">
+              <div className="h-full bg-rose rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="flex justify-between text-xs text-taupe">
+              <span>Day 0</span>
+              <span className="font-medium text-rose">{days} of 30</span>
+              <span>Day 30</span>
             </div>
           </div>
 
-          {/* Message */}
-          <Card className="p-6 text-center">
-            <p className="font-serif text-lg text-charcoal italic leading-relaxed">
-              &ldquo;{previewData.personalMessage}&rdquo;
-            </p>
-          </Card>
-
-          {/* Details */}
-          <Card className="p-5 space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-taupe-light text-xs uppercase tracking-wide">Flower</p>
-                <p className="font-medium text-charcoal">{config.name}</p>
+          {/* Stage milestones */}
+          <div className="grid grid-cols-3 gap-3 text-center">
+            {[
+              { label: 'Days 1–8', stage: 'Seed', icon: '·' },
+              { label: 'Days 9–21', stage: 'Growing', icon: '↑' },
+              { label: 'Days 22–29', stage: 'Budding', icon: '◉' },
+            ].map((m) => (
+              <div key={m.stage} className={`p-3 rounded-xl border transition-colors ${
+                stage === m.stage.toLowerCase().replace('ing', '').replace('seed', 'seed').replace('bud', 'bud')
+                  ? 'border-rose bg-rose/5 text-rose'
+                  : 'border-blush-soft/30 text-taupe-light'
+              }`}>
+                <p className="text-lg mb-0.5">{m.icon}</p>
+                <p className="text-xs font-medium">{m.stage}</p>
+                <p className="text-xs">{m.label}</p>
               </div>
-              <div>
-                <p className="text-taupe-light text-xs uppercase tracking-wide">Name</p>
-                <p className="font-medium text-charcoal">{previewData.flowerName}</p>
-              </div>
-              <div>
-                <p className="text-taupe-light text-xs uppercase tracking-wide">Start</p>
-                <p className="font-medium text-charcoal">{previewData.startDate}</p>
-              </div>
-              {previewData.giverName && (
-                <div>
-                  <p className="text-taupe-light text-xs uppercase tracking-wide">From</p>
-                  <p className="font-medium text-charcoal">{previewData.giverName}</p>
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Growth timeline */}
-          <div className="space-y-3">
-            <p className="text-sm text-taupe text-center">30 days from now...</p>
-            <div className="flex items-center justify-between px-2">
-              {GROWTH_STAGES.map((s, i) => (
-                <div key={s.day} className="flex flex-col items-center gap-1">
-                  <span className="text-xl" aria-hidden="true">{s.emoji}</span>
-                  <span className="text-[10px] text-taupe-light">{s.label}</span>
-                </div>
-              ))}
-            </div>
-            {/* Connecting line */}
-            <div className="relative h-0.5 bg-blush-soft/40 rounded-full mx-8 -mt-6 mb-2">
-              <div className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-sage to-rose rounded-full" />
-            </div>
+            ))}
           </div>
+        </Card>
 
-          {/* Bloom message */}
-          <Card className="p-5">
-            <button
-              onClick={() => setShowBloomMessage(!showBloomMessage)}
-              className="w-full flex items-center justify-between text-left min-h-[44px]"
-            >
-              <div>
-                <p className="text-sm font-medium text-charcoal">Bloom message</p>
-                <p className="text-xs text-taupe-light">Hidden until Day 30</p>
-              </div>
-              <span className="text-taupe-light text-sm">{showBloomMessage ? '▲' : '▼'}</span>
-            </button>
-            {showBloomMessage && (
-              <div className="mt-3 pt-3 border-t border-blush-soft/30 animate-fade-in">
-                <p className="font-serif text-charcoal italic">&ldquo;{previewData.bloomMessage}&rdquo;</p>
-              </div>
+        {/* Bloom Message (secret) */}
+        {preview.bloomMessage && (
+          <Card className="p-6 bg-warm-blush/50 border-blush/30 text-center space-y-2">
+            <p className="text-xs text-taupe uppercase tracking-widest">Bloom Message (hidden until Day 30)</p>
+            <p className="font-serif text-charcoal italic leading-relaxed">&ldquo;{preview.bloomMessage}&rdquo;</p>
+          </Card>
+        )}
+
+        {/* Actions */}
+        <div className="space-y-3">
+          <Button onClick={handleConfirm} size="lg" disabled={isCreating} className="w-full" arrow={!isCreating}>
+            {isCreating ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Planting...
+              </span>
+            ) : (
+              'Plant the Flower'
             )}
-          </Card>
-
-          {error && (
-            <Card className="p-4 bg-rose/5 border-rose/20 text-center">
-              <p className="text-sm text-rose">{error}</p>
-            </Card>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <Button variant="secondary" className="flex-1" onClick={() => router.push('/create')}>
-              Edit
-            </Button>
-            <Button className="flex-1" onClick={handleCreate} disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create My Flower'}
-            </Button>
-          </div>
+          </Button>
+          <Button onClick={share} size="lg" variant="secondary" className="w-full">
+            {shareUrl ? 'Share Link' : 'Copy Link'}
+          </Button>
+          <p className="text-center text-xs text-taupe-light">Don&apos;t close this — the link won&apos;t show again.</p>
+          <button
+            onClick={() => router.push('/create')}
+            className="block w-full text-center text-sm text-taupe hover:text-charcoal py-2 transition-colors cursor-pointer"
+          >
+            ← Back to edit
+          </button>
         </div>
       </div>
     </main>

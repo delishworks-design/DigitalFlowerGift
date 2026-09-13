@@ -5,7 +5,7 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-cream">
       {/* ─── HEADER ─── */}
-      <header className="px-6 py-5 flex items-center justify-center sm:justify-start">
+      <header className="px-6 py-5 flex items-center justify-center sm:justify-start max-w-5xl mx-auto">
         <div className="flex items-center gap-2">
           <svg width="20" height="20" viewBox="0 0 20 20" className="text-rose" aria-hidden="true">
             <circle cx="10" cy="8" r="2.5" fill="currentColor" opacity="0.8" />
@@ -18,7 +18,7 @@ export default function LandingPage() {
       </header>
 
       {/* ─── HERO ─── */}
-      <section className="px-6 pt-8 pb-20 sm:pt-16 sm:pb-28 flex flex-col items-center text-center">
+      <section className="px-6 pt-8 pb-20 sm:pt-16 sm:pb-28 flex flex-col items-center text-center max-w-5xl mx-auto">
         <div className="animate-float mb-6">
           <FlowerVisual stage="bloom" health="healthy" flowerType="rose" size="lg" showParticles />
         </div>
@@ -27,71 +27,63 @@ export default function LandingPage() {
           Give them a flower<br />that grows with them.
         </h1>
 
-        <p className="text-taupe text-base sm:text-lg max-w-sm leading-relaxed mb-8">
-          A little care each day.<br />A beautiful surprise on day 30.
+        <p className="text-taupe text-base sm:text-lg max-w-sm leading-relaxed mb-10">
+          A little flower. A little care.<br />A beautiful surprise waiting to bloom.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <Link
             href="/create"
-            className="inline-flex items-center justify-center px-8 py-4 bg-rose text-white font-medium rounded-2xl shadow-md hover:bg-rose-deep hover:shadow-lg transition-all duration-200 active:scale-[0.97] text-base min-h-[56px]"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-rose text-white font-semibold rounded-2xl shadow-lg hover:bg-rose-deep hover:shadow-xl shadow-rose/25 transition-all duration-200 active:scale-[0.97] text-base min-h-[56px] w-full sm:w-auto cursor-pointer"
           >
+            <span aria-hidden="true">🌷</span>
             Create a Flower
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </Link>
           <a
             href="#how-it-works"
-            className="inline-flex items-center justify-center px-6 py-4 text-taupe font-medium rounded-2xl hover:bg-cream-deep transition-all duration-200 text-base min-h-[56px]"
+            className="inline-flex items-center justify-center px-6 py-4 text-taupe font-semibold rounded-2xl border-2 border-blush-soft/60 hover:border-blush hover:bg-cream-deep transition-all duration-200 text-base min-h-[56px] w-full sm:w-auto cursor-pointer"
           >
-            How it works
+            How It Works
           </a>
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
+      {/* ─── HOW IT WORKS — Visual Cards ─── */}
       <section id="how-it-works" className="px-6 py-20 sm:py-28 bg-cream-deep">
         <div className="max-w-lg mx-auto">
           <h2 className="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-14">
             Three simple steps
           </h2>
 
-          <div className="space-y-12 stagger-children">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger-children">
             {/* Step 1 */}
-            <div className="flex items-start gap-5 animate-fade-in">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center">
-                <span className="font-serif text-rose text-lg font-semibold">1</span>
-              </div>
-              <div>
-                <h3 className="font-serif text-xl text-charcoal mb-1">Create</h3>
-                <p className="text-taupe leading-relaxed">
-                  Choose a flower and write your message.
-                </p>
-              </div>
+            <div className="bg-white rounded-2xl p-6 text-center border border-blush-soft/30 shadow-sm animate-fade-in">
+              <div className="text-4xl mb-3" aria-hidden="true">💧</div>
+              <h3 className="font-serif text-xl text-charcoal mb-1">Care for it</h3>
+              <p className="text-sm text-taupe leading-relaxed">
+                A little each day.
+              </p>
             </div>
 
             {/* Step 2 */}
-            <div className="flex items-start gap-5 animate-fade-in">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-sage/10 flex items-center justify-center">
-                <span className="font-serif text-sage text-lg font-semibold">2</span>
-              </div>
-              <div>
-                <h3 className="font-serif text-xl text-charcoal mb-1">Care</h3>
-                <p className="text-taupe leading-relaxed">
-                  They water, love, and watch it grow.
-                </p>
-              </div>
+            <div className="bg-white rounded-2xl p-6 text-center border border-blush-soft/30 shadow-sm animate-fade-in">
+              <div className="text-4xl mb-3" aria-hidden="true">🌱</div>
+              <h3 className="font-serif text-xl text-charcoal mb-1">Watch it grow</h3>
+              <p className="text-sm text-taupe leading-relaxed">
+                Day by day.
+              </p>
             </div>
 
             {/* Step 3 */}
-            <div className="flex items-start gap-5 animate-fade-in">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blush/20 flex items-center justify-center">
-                <span className="font-serif text-rose text-lg font-semibold">3</span>
-              </div>
-              <div>
-                <h3 className="font-serif text-xl text-charcoal mb-1">Bloom</h3>
-                <p className="text-taupe leading-relaxed">
-                  On day 30, something special happens.
-                </p>
-              </div>
+            <div className="bg-white rounded-2xl p-6 text-center border border-blush-soft/30 shadow-sm animate-fade-in">
+              <div className="text-4xl mb-3" aria-hidden="true">🌸</div>
+              <h3 className="font-serif text-xl text-charcoal mb-1">See it bloom</h3>
+              <p className="text-sm text-taupe leading-relaxed">
+                On Day 30.
+              </p>
             </div>
           </div>
         </div>
@@ -133,14 +125,18 @@ export default function LandingPage() {
       {/* ─── FINAL CTA ─── */}
       <section className="px-6 py-20 sm:py-28 bg-warm-blush">
         <div className="max-w-lg mx-auto text-center">
-          <h2 className="font-serif text-3xl sm:text-4xl text-charcoal mb-6">
+          <h2 className="font-serif text-3xl sm:text-4xl text-charcoal mb-8">
             Ready to grow<br />something beautiful?
           </h2>
           <Link
             href="/create"
-            className="inline-flex items-center justify-center px-8 py-4 bg-rose text-white font-medium rounded-2xl shadow-md hover:bg-rose-deep hover:shadow-lg transition-all duration-200 active:scale-[0.97] text-base min-h-[56px]"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-rose text-white font-semibold rounded-2xl shadow-lg hover:bg-rose-deep hover:shadow-xl shadow-rose/25 transition-all duration-200 active:scale-[0.97] text-base min-h-[56px] cursor-pointer"
           >
+            <span aria-hidden="true">🌷</span>
             Create a Flower
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </Link>
         </div>
       </section>

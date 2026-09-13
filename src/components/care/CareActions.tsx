@@ -1,57 +1,163 @@
 'use client';
 
 import { useState } from 'react';
+import type { HealthState } from '@/types';
+import Button from '@/components/ui/Button';
 
 interface CareActionsProps {
-  todayCare: string[];
-  onCare: (type: string) => Promise<void>;
-  isLoading: boolean;
+  recipientTimezone: string;
+  lastWateredAt: string | null;
+  flowerHealth: number;
+  giftToken: string;
 }
 
-export default function CareActions({ todayCare, onCare, isLoading }: CareActionsProps) {
-  const [loadingType, setLoadingType] = useState<string | null>(null);
+export default function CareActions({ recipientTimezone, lastWateredAt, flowerHealth, giftToken }: CareActionsProps) {
+  const [canWater, setCanWater] = useState(() => {
+    if (!lastWateredAt) return true;
+    const last = new Date(lastWateredAt);
+    const now = new Date();
+    const diffMs = now.getTime() - last.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    return diffHours >= 20;
+  });
+  const [watering, setWatering] = useState(false);
+  const [careResult, setCareResult] = useState<{ success: boolean; xpEarned: number; streak?: number } | null>(null);
+  const [encouragement, setEncouragement] = useState('');
 
-  const actions = [
-    { type: 'water', label: 'Water', xp: '+10', color: 'hover:border-sage hover:bg-sage/5 active:bg-sage/10' },
-    { type: 'sunlight', label: 'Sunshine', xp: '+5', color: 'hover:border-gold hover:bg-gold/5 active:bg-gold/10' },
-    { type: 'love', label: 'Love', xp: '+5', color: 'hover:border-rose hover:bg-rose/5 active:bg-rose/10' },
-  ];
+  const healthState: HealthState = flowerHealth >= 70 ? 'healthy' : flowerHealth >= 40 ? 'thirsty' : 'wilting';
 
-  const handleCare = async (type: string) => {
-    setLoadingType(type);
-    try { await onCare(type); } finally { setLoadingType(null); }
+  const water = async () => {
+    if (watering || !canWater) return;
+    setWatering(true);
+    setCareResult(null);
+    setEncouragement('');
+
+    try {
+      const response = await fetch('/api/care', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giftToken, careType: 'water', recipientTimezone }),
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+      setCareResult({ success: true, xpEarned: result.xpEarned || 10, streak: result.streak });
+      setCanWater(false);
+      setEncouragement(getEncouragement(result.streak || 0));
+    } catch {
+      setCareResult({ success: false, xpEarned: 0 });
+      setEncouragement('');
+    } finally {
+      setWatering(false);
+    }
+  };
+
+  const getEncouragement = (streak: number): string => {
+    if (streak >= 7) return 'A whole week of love. Your flower is thriving. 🌻';
+    if (streak >= 3) return 'Beautiful consistency. Keep going. 🌱';
+    return 'A little love goes a long way. 💛';
   };
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-xs text-taupe-light uppercase tracking-wide text-center">Daily Care</h3>
-      <div className="grid grid-cols-3 gap-3">
-        {actions.map((action) => {
-          const done = todayCare.includes(action.type);
-          const loading = loadingType === action.type;
-          const icons: Record<string, string> = { water: '💧', sunlight: '☀️', love: '❤️' };
-
-          return (
-            <button
-              key={action.type}
-              onClick={() => handleCare(action.type)}
-              disabled={done || loading || isLoading}
-              className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl border-2 transition-all duration-200 min-h-[44px] ${
-                done
-                  ? 'bg-sage/10 border-sage-light/30 text-sage'
-                  : `bg-white border-blush-soft/40 text-charcoal ${action.color}`
-              } disabled:cursor-not-allowed`}
-              aria-label={done ? `${action.label} completed today` : `Give ${action.label}`}
-            >
-              <span className="text-xl" aria-hidden="true">{icons[action.type]}</span>
-              <span className="text-xs font-medium">
-                {done ? 'Done' : loading ? '...' : action.label}
+    <div className="space-y-5">
+      {/* Primary Action: Water */}
+      <div className="text-center space-y-3">
+        {canWater ? (
+          <Button
+            onClick={water}
+            disabled={watering}
+            size="lg"
+            className="w-full text-lg px-8 py-5 min-h-[60px]"
+            arrow={!watering}
+          >
+            {watering ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Watering...
               </span>
-              {!done && <span className="text-[10px] text-taupe-light">{action.xp}</span>}
-            </button>
-          );
-        })}
+            ) : (
+              <>
+                <span aria-hidden="true" className="text-xl">💧</span>
+                Water {encouragement ? 'Again' : 'Your Flower'}
+              </>
+            )}
+          </Button>
+        ) : (
+          <Button disabled size="lg" className="w-full text-lg px-8 py-5 min-h-[60px] opacity-60 cursor-not-allowed">
+            <span aria-hidden="true" className="text-xl">✓</span>
+            Watered Today
+          </Button>
+        )}
       </div>
+
+      {/* Care Result Feedback */}
+      {careResult && (
+        <div className={`p-4 rounded-2xl text-center animate-fade-in ${
+          careResult.success ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'
+        }`}>
+          {careResult.success ? (
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-green-800">+{careResult.xpEarned} XP earned</p>
+              {careResult.streak !== undefined && (
+                <p className="text-xs text-green-600">Streak: {careResult.streak} {careResult.streak === 1 ? 'day' : 'days'}</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm font-medium text-red-800">Couldn&apos;t water — please try again.</p>
+          )}
+        </div>
+      )}
+
+      {/* Secondary Actions */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({ text: `A flower is growing for you 🌱` });
+            }
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-blush-soft/60 rounded-2xl text-sm font-medium text-charcoal hover:border-blush hover:bg-cream-deep transition-all min-h-[48px] cursor-pointer"
+        >
+          <span aria-hidden="true">📤</span>
+          Share
+        </button>
+        <button
+          onClick={() => {
+            if (navigator.clipboard && window.location.href) {
+              navigator.clipboard.writeText(window.location.href);
+            }
+          }}
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-blush-soft/60 rounded-2xl text-sm font-medium text-charcoal hover:border-blush hover:bg-cream-deep transition-all min-h-[48px] cursor-pointer"
+        >
+          <span aria-hidden="true">🔗</span>
+          Copy Link
+        </button>
+      </div>
+
+      {/* Status Messages */}
+      {healthState === 'thirsty' && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-center">
+          <p className="text-sm font-medium text-amber-800">This flower needs attention</p>
+          <p className="text-xs text-amber-600 mt-1">Water it to help it recover.</p>
+        </div>
+      )}
+
+      {healthState === 'wilting' && (
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-center">
+          <p className="text-sm font-medium text-red-800">This flower is fading</p>
+          <p className="text-xs text-red-600 mt-1">Water it now to help it recover.</p>
+        </div>
+      )}
+
+      {/* Growth Milestones */}
+      {careResult?.success && careResult.streak !== undefined && careResult.streak > 0 && (
+        <div className="space-y-2">
+          {[7, 14, 21, 28].filter(m => careResult.streak! >= m).reverse().slice(0, 1).map(milestone => (
+            <div key={milestone} className="p-3 rounded-2xl bg-green-50 border border-green-100 text-center animate-fade-in">
+              <p className="text-xs text-green-600">🎉 {milestone} day streak!</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
