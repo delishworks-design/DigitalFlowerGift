@@ -153,7 +153,7 @@ export default function RecipientPage({ params }: { params: Promise<{ token: str
         {/* Flower */}
         <div className="bg-white/60 rounded-3xl p-6 shadow-sm backdrop-blur-sm">
           <FlowerVisual
-            stage={data.currentDay >= 30 ? 'mature' : data.stage as never}
+            stage={data.stage as never}
             health={data.health as never}
             flowerType={data.gift.flowerType as never}
             isBlooming={data.isBlooming}

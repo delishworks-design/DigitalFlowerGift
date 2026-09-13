@@ -18,6 +18,7 @@ export async function createGift(input: CreateGiftInput): Promise<Gift> {
       personal_message: input.personalMessage,
       bloom_message: input.bloomMessage,
       start_date: input.startDate,
+      recipient_timezone: input.recipientTimezone || 'Asia/Manila',
     })
     .select()
     .single();

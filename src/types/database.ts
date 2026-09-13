@@ -14,6 +14,7 @@ export interface Database {
           personal_message: string;
           bloom_message: string;
           start_date: string;
+          recipient_timezone: string;
           created_at: string;
           updated_at: string;
           status: string;
@@ -28,6 +29,7 @@ export interface Database {
           personal_message: string;
           bloom_message: string;
           start_date: string;
+          recipient_timezone?: string;
           created_at?: string;
           updated_at?: string;
           status?: string;
@@ -42,6 +44,7 @@ export interface Database {
           personal_message?: string;
           bloom_message?: string;
           start_date?: string;
+          recipient_timezone?: string;
           created_at?: string;
           updated_at?: string;
           status?: string;

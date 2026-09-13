@@ -24,6 +24,7 @@ export default function CreatePage() {
     personalMessage: '',
     bloomMessage: '',
     startDate: getCurrentDate(),
+    recipientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Manila',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CreateGiftInput, string>>>({});
 

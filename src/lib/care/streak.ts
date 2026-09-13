@@ -1,16 +1,19 @@
-export function calculateStreak(careDates: string[]): number {
+export function calculateStreak(careDates: string[], timezone?: string): number {
   if (careDates.length === 0) return 0;
 
+  const tz = timezone || 'UTC';
   const sorted = [...careDates].sort().reverse();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+
+  // Get today in recipient timezone
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('en-CA', { timeZone: tz });
+  const today = new Date(todayStr + 'T00:00:00Z');
 
   let streak = 0;
   const expectedDate = new Date(today);
 
   for (let i = 0; i < sorted.length; i++) {
     const careDate = new Date(sorted[i] + 'T00:00:00Z');
-    careDate.setHours(0, 0, 0, 0);
 
     if (careDate.getTime() === expectedDate.getTime()) {
       streak++;

@@ -30,7 +30,8 @@ export async function GET(
       );
     }
 
-    const today = getCurrentDate();
+    const timezone = gift.recipient_timezone || 'Asia/Manila';
+    const today = getCurrentDate(timezone);
     const currentDay = calculateFlowerDay(gift.start_date, today);
     const stage = getGrowthStage(currentDay);
     const todayEvents = await getTodayCareEvents(gift.id, today);
@@ -38,7 +39,7 @@ export async function GET(
     const todayXp = calculateDailyXp(todayEvents);
     const totalXp = await getTotalXp(gift.id);
     const careDates = await getUniqueCareDates(gift.id);
-    const streak = calculateStreak(careDates);
+    const streak = calculateStreak(careDates, timezone);
     const lastCareDate = await getLastCareDate(gift.id);
     const health = getHealthState(lastCareDate, today);
     const existingRewards = await getRewardsForGift(gift.id);

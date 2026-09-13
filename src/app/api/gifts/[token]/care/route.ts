@@ -9,6 +9,7 @@ import { XP_VALUES, DAILY_XP_CAP, calculateDailyXp } from '@/lib/care/xp';
 import { calculateStreak } from '@/lib/care/streak';
 import { getNewlyUnlockedRewards } from '@/lib/rewards/rewards';
 import { getCurrentDate } from '@/lib/time/date';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import type { CareType } from '@/types';
 
 export async function POST(
@@ -17,6 +18,16 @@ export async function POST(
 ) {
   try {
     const { token } = await params;
+
+    // Rate limit: 20 care actions per token per minute
+    const rl = checkRateLimit(`care:${token}`, 20, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const parsed = careActionSchema.safeParse(body);
 
@@ -35,7 +46,8 @@ export async function POST(
       );
     }
 
-    const today = getCurrentDate();
+    const timezone = gift.recipient_timezone || 'Asia/Manila';
+    const today = getCurrentDate(timezone);
     const todayEvents = await getTodayCareEvents(gift.id, today);
     const todayCareTypes = todayEvents.map((e) => e.care_type) as CareType[];
 
@@ -71,7 +83,7 @@ export async function POST(
     const updatedTodayXp = calculateDailyXp(updatedTodayEvents);
     const totalXp = await getTotalXp(gift.id);
     const careDates = await getUniqueCareDates(gift.id);
-    const streak = calculateStreak(careDates);
+    const streak = calculateStreak(careDates, timezone);
     const lastCareDate = await getLastCareDate(gift.id);
     const health = getHealthState(lastCareDate, today);
     const existingRewards = await getRewardsForGift(gift.id);
