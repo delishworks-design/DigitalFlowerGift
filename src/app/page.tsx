@@ -1,49 +1,154 @@
 import Link from 'next/link';
+import FlowerVisual from '@/components/flower/FlowerVisual';
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-b from-[#FFF8F0] to-[#FFE4E6]">
-      <div className="max-w-md w-full text-center space-y-8">
-        {/* Hero flower icon */}
-        <div className="text-6xl animate-float" aria-hidden="true">🌸</div>
+    <main className="min-h-screen bg-cream">
+      {/* ─── HEADER ─── */}
+      <header className="px-6 py-5 flex items-center justify-center sm:justify-start">
+        <div className="flex items-center gap-2">
+          <svg width="20" height="20" viewBox="0 0 20 20" className="text-rose" aria-hidden="true">
+            <circle cx="10" cy="8" r="2.5" fill="currentColor" opacity="0.8" />
+            <ellipse cx="10" cy="8" rx="3" ry="5" fill="currentColor" opacity="0.3" transform="rotate(30 10 8)" />
+            <ellipse cx="10" cy="8" rx="3" ry="5" fill="currentColor" opacity="0.3" transform="rotate(-30 10 8)" />
+            <path d="M10,12 L10,18" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          </svg>
+          <span className="font-serif text-lg text-charcoal tracking-tight">Digital Flower</span>
+        </div>
+      </header>
 
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 leading-tight">
-          Give someone a flower
-          <br />
-          that grows with them.
-        </h1>
-
-        <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto">
-          Create a digital flower, write a personal message, and send a private link.
-          They care for it a little each day. After 30 days, it blooms.
-        </p>
-
-        <Link
-          href="/create"
-          className="inline-flex items-center justify-center px-8 py-4 bg-[#E8637A] hover:bg-[#C94862] text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95 text-lg min-h-[56px]"
-        >
-          Create a Flower
-        </Link>
-
-        <div className="grid grid-cols-3 gap-6 pt-8 text-center">
-          <div className="space-y-2">
-            <div className="text-2xl" aria-hidden="true">💧</div>
-            <p className="text-sm text-gray-500">Daily care</p>
-          </div>
-          <div className="space-y-2">
-            <div className="text-2xl" aria-hidden="true">🌱</div>
-            <p className="text-sm text-gray-500">Watch it grow</p>
-          </div>
-          <div className="space-y-2">
-            <div className="text-2xl" aria-hidden="true">🌸</div>
-            <p className="text-sm text-gray-500">30-day bloom</p>
-          </div>
+      {/* ─── HERO ─── */}
+      <section className="px-6 pt-8 pb-20 sm:pt-16 sm:pb-28 flex flex-col items-center text-center">
+        <div className="animate-float mb-6">
+          <FlowerVisual stage="bloom" health="healthy" flowerType="rose" size="lg" showParticles />
         </div>
 
-        <p className="text-xs text-gray-400 pt-4">
-          Private link • No account needed
+        <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-charcoal leading-[1.1] max-w-lg mb-5">
+          Give them a flower<br />that grows with them.
+        </h1>
+
+        <p className="text-taupe text-base sm:text-lg max-w-sm leading-relaxed mb-8">
+          A little care each day.<br />A beautiful surprise on day 30.
         </p>
-      </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link
+            href="/create"
+            className="inline-flex items-center justify-center px-8 py-4 bg-rose text-white font-medium rounded-2xl shadow-md hover:bg-rose-deep hover:shadow-lg transition-all duration-200 active:scale-[0.97] text-base min-h-[56px]"
+          >
+            Create a Flower
+          </Link>
+          <a
+            href="#how-it-works"
+            className="inline-flex items-center justify-center px-6 py-4 text-taupe font-medium rounded-2xl hover:bg-cream-deep transition-all duration-200 text-base min-h-[56px]"
+          >
+            How it works
+          </a>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─── */}
+      <section id="how-it-works" className="px-6 py-20 sm:py-28 bg-cream-deep">
+        <div className="max-w-lg mx-auto">
+          <h2 className="font-serif text-3xl sm:text-4xl text-charcoal text-center mb-14">
+            Three simple steps
+          </h2>
+
+          <div className="space-y-12 stagger-children">
+            {/* Step 1 */}
+            <div className="flex items-start gap-5 animate-fade-in">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose/10 flex items-center justify-center">
+                <span className="font-serif text-rose text-lg font-semibold">1</span>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl text-charcoal mb-1">Create</h3>
+                <p className="text-taupe leading-relaxed">
+                  Choose a flower and write your message.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex items-start gap-5 animate-fade-in">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-sage/10 flex items-center justify-center">
+                <span className="font-serif text-sage text-lg font-semibold">2</span>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl text-charcoal mb-1">Care</h3>
+                <p className="text-taupe leading-relaxed">
+                  They water, love, and watch it grow.
+                </p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex items-start gap-5 animate-fade-in">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blush/20 flex items-center justify-center">
+                <span className="font-serif text-rose text-lg font-semibold">3</span>
+              </div>
+              <div>
+                <h3 className="font-serif text-xl text-charcoal mb-1">Bloom</h3>
+                <p className="text-taupe leading-relaxed">
+                  On day 30, something special happens.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── EMOTIONAL SECTION ─── */}
+      <section className="px-6 py-20 sm:py-28">
+        <div className="max-w-lg mx-auto text-center">
+          <p className="text-taupe text-sm uppercase tracking-widest mb-4">More than a message</p>
+          <h2 className="font-serif text-3xl sm:text-4xl text-charcoal mb-6">
+            Something they can grow.
+          </h2>
+          <p className="text-taupe leading-relaxed max-w-md mx-auto mb-12">
+            Every flower starts as a tiny seed. With a little love each day, it grows into something beautiful — just like the relationship you share.
+          </p>
+
+          {/* Growth stages */}
+          <div className="flex items-end justify-center gap-6 sm:gap-10">
+            <div className="text-center space-y-2">
+              <FlowerVisual stage="seed" health="healthy" flowerType="rose" size="sm" />
+              <p className="text-xs text-taupe-light">Seed</p>
+            </div>
+            <div className="text-center space-y-2">
+              <FlowerVisual stage="young_plant" health="healthy" flowerType="sunflower" size="sm" />
+              <p className="text-xs text-taupe-light">Growing</p>
+            </div>
+            <div className="text-center space-y-2">
+              <FlowerVisual stage="bud" health="healthy" flowerType="tulip" size="sm" />
+              <p className="text-xs text-taupe-light">Budding</p>
+            </div>
+            <div className="text-center space-y-2">
+              <FlowerVisual stage="bloom" health="healthy" flowerType="lavender" size="sm" />
+              <p className="text-xs text-taupe-light">Bloom</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FINAL CTA ─── */}
+      <section className="px-6 py-20 sm:py-28 bg-warm-blush">
+        <div className="max-w-lg mx-auto text-center">
+          <h2 className="font-serif text-3xl sm:text-4xl text-charcoal mb-6">
+            Ready to grow<br />something beautiful?
+          </h2>
+          <Link
+            href="/create"
+            className="inline-flex items-center justify-center px-8 py-4 bg-rose text-white font-medium rounded-2xl shadow-md hover:bg-rose-deep hover:shadow-lg transition-all duration-200 active:scale-[0.97] text-base min-h-[56px]"
+          >
+            Create a Flower
+          </Link>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ─── */}
+      <footer className="px-6 py-8 text-center">
+        <p className="text-xs text-taupe-light">Made with care.</p>
+      </footer>
     </main>
   );
 }

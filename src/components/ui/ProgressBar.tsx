@@ -10,16 +10,18 @@ export default function ProgressBar({ current, total }: ProgressBarProps) {
 
   return (
     <div className="w-full">
-      <div className="flex justify-between text-sm text-gray-500 mb-1">
+      <div className="flex justify-between items-center text-xs text-taupe-light mb-2">
         <span>Day {Math.min(current, total)} of {total}</span>
         <span>{Math.round(percentage)}%</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+      <div className="w-full bg-blush-soft/40 rounded-full h-2 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-1000 ease-out"
           style={{
             width: `${percentage}%`,
-            backgroundColor: current >= 30 ? '#E8637A' : '#6BA368',
+            background: current >= 30
+              ? 'linear-gradient(90deg, #C96F7D, #E7B1B8)'
+              : 'linear-gradient(90deg, #8FA58C, #B5C9B2)',
           }}
           role="progressbar"
           aria-valuenow={current}

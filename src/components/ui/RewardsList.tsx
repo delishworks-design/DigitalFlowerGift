@@ -16,8 +16,8 @@ const ALL_REWARDS: RewardDefinition[] = [
 
 export default function RewardsList({ rewards }: RewardsListProps) {
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-gray-500">Milestones</h3>
+    <div className="space-y-3">
+      <h3 className="text-xs text-taupe-light uppercase tracking-wide">Milestones</h3>
       <div className="space-y-2">
         {ALL_REWARDS.map((reward) => {
           const unlocked = rewards.includes(reward.key);
@@ -26,21 +26,25 @@ export default function RewardsList({ rewards }: RewardsListProps) {
               key={reward.key}
               className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                 unlocked
-                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100'
-                  : 'bg-gray-50 border border-gray-100 opacity-50'
+                  ? 'bg-warm-blush/40 border border-blush/20'
+                  : 'bg-cream-deep/50 border border-transparent opacity-40'
               }`}
             >
-              <span className="text-xl" aria-hidden="true">{reward.icon}</span>
+              <span className="text-lg" aria-hidden="true">{reward.icon}</span>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${unlocked ? 'text-green-800' : 'text-gray-400'}`}>
+                <p className={`text-sm font-medium ${unlocked ? 'text-charcoal' : 'text-taupe-light'}`}>
                   {reward.title}
                 </p>
-                <p className={`text-xs ${unlocked ? 'text-green-600' : 'text-gray-300'}`}>
+                <p className={`text-xs ${unlocked ? 'text-taupe' : 'text-taupe-light'}`}>
                   {unlocked ? reward.description : `Day ${reward.day}`}
                 </p>
               </div>
               {unlocked && (
-                <span className="text-green-500 text-sm" aria-label="Unlocked">✓</span>
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-sage/20 flex items-center justify-center">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 5L4 7L8 3" stroke="#8FA58C" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
               )}
             </div>
           );
