@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --color-soil: #8B6F47;
+  --color-soil-light: #A68B5B;
+  --color-soil-dark: #6B5233;
+  --color-leaf: #6BA368;
+  --color-leaf-light: #8BC68A;
+  --color-leaf-dark: #4A7A48;
+  --color-warm: #FFF8F0;
+  --color-warm-dark: #F5E6D3;
+  --color-blush: #FFE4E6;
+  --color-rose-petal: #E8637A;
+  --color-rose-dark: #C94862;
+  --color-sunflower-petal: #F4C430;
+  --color-sunflower-dark: #D4A410;
+  --color-tulip-petal: #C850C0;
+  --color-lavender-petal: #967BB6;
+  --color-daisy-petal: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(2deg); }
+  75% { transform: rotate(-2deg); }
+}
+
+@keyframes bloom-open {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.animate-float {
+  animation: gentle-float 4s ease-in-out infinite;
+}
+
+.animate-sway {
+  animation: sway 6s ease-in-out infinite;
+}
+
+.animate-bloom {
+  animation: bloom-open 2s ease-out forwards;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
